@@ -1,0 +1,15 @@
+name: Dataset Workflow
+on: [workflow_dispatch]
+jobs:
+  LoadDataset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install script requirements
+        run: pip install -r src/requirements.txt
+      - name: fill database
+        env:
+          DB_USERNAME: admangarakov
+          DB_PASSWORD: ${{secrets.DBPASSWORD}}
+        run: python src/dataset_loading.py "videos-stats.csv"
