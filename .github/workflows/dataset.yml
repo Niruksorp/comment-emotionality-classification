@@ -1,0 +1,24 @@
+name: Dataset Workflow
+on: [workflow_dispatch]
+jobs:
+  LoadDataset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install kaggle API
+        run: pip install kaggle
+      - name: download dataset
+        env:
+          KAGGLE_USERNAME: niruksorp11
+          KAGGLE_KEY: ${{secrets.KAGGLE_PASS}}
+        run: kaggle datasets download advaypatil/youtube-statistics
+      - name: unpack dataset archive
+        run: unzip youtube-statistics.zip
+      - name: install script requirements
+        run: pip install -r src/requirements.txt
+      - name: fill database
+        env:
+          DB_USERNAME: admangarakov
+          DB_PASSWORD: ${{secrets.DBPASSWORD}}
+        run: python src/dataset_loading.py "Curriculum Vitae.csv"
