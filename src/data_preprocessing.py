@@ -5,6 +5,7 @@ import torch
 import time
 import numpy as np
 
+
 from transformers import AutoTokenizer, AutoModel
 
 DATASET_TABLE_NAME = 'dataset'
@@ -40,8 +41,6 @@ def main():
         text_data = batch['CommentMessage'].tolist()
         vectorized_msg += get_embs(text_data).numpy().tolist()
         print(f'Processed rows: {start_pos+batch_size}. Time spent: {time.time() - start_time}')
-        if time.time() - start_time > 60:
-            break
     processed_dataset = dataset.iloc[:len(vectorized_msg)]
     processed_dataset['CommentMessage'] = vectorized_msg
     save_prepared_dataset(processed_dataset, connection)
