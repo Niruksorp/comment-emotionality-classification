@@ -5,14 +5,7 @@ from psycopg2 import sql
 
 
 def connect_database():
-    username = os.getenv('DB_USERNAME')
-    password = os.getenv('DB_PASSWORD')
-    conn = psycopg2.connect(
-        host="postgres://admangarakov:zGKsv6rsX01790iaEivPCxc6TeC6cRvj@dpg-chn1bvak728vrd9a9ed0-a.oregon-postgres"
-             ".render.com",
-        database="aais",
-        user=username,
-        password=password)
+    conn = psycopg2.connect("postgres://admangarakov:zGKsv6rsX01790iaEivPCxc6TeC6cRvj@dpg-chn1bvak728vrd9a9ed0-a.oregon-postgres.render.com/aais")
     return conn
 
 
