@@ -6,7 +6,7 @@ from util.database import connect_database, save_dataset
 def process_csv(filename):
     df = pd.read_csv(filename)
     connection = connect_database()
-    save_dataset(df, connection, "dataset_raw", True)
+    save_dataset(df, connection)
     connection.close()
 
 
