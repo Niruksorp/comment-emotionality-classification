@@ -13,15 +13,15 @@ def create_data_structure(connection):
     cursor = connection.cursor()
 
     cursor.execute(sql.SQL("CREATE TABLE {table}(id int primary key, comment_message text, emotional_grade integer, version integer)")
-                   .format(table=sql.Identifier("Dataset")))
+                   .format(table=sql.Identifier("dataset")))
 
     cursor.execute(sql.SQL(
         "CREATE TABLE {table}(model_id int primary key, model_name text, weights text, version integer, f1_score decimal, data_version integer)")
-                   .format(table=sql.Identifier("Model")))
+                   .format(table=sql.Identifier("model")))
 
     cursor.execute(sql.SQL(
         "CREATE TABLE {table}(id int primary key, commemt_message text, emmotional_grade integer)")
-                   .format(table=sql.Identifier("Preprocessed_Dataset")))
+                   .format(table=sql.Identifier("preprocessed_dataset")))
     cursor.close()
     connection.commit()
 
@@ -29,9 +29,14 @@ def create_data_structure(connection):
 def save_dataset(df, connection):
     cursor = connection.cursor()
 
+    values = []
     for index, row in df.iterrows():
-        cursor.execute(sql.SQL("INSERT INTO {table}(id, comment_message, emotional_grade, version) values (%s, %s, %s, %s)")
-                       .format(table=sql.Identifier("Dataset")),
-                       (row["Unnamed: 0"], row["Comment"], row["Sentiment"], "1"))
+        values.append((row["Unnamed: 0"], row["Comment"], row["Sentiment"], "1"))
+
+    args = ','.join(cursor.mogrify("(%s,%s,%s,%s)", i).decode('utf-8')
+                    for i in values)
+
+    cursor.execute('INSERT INTO dataset (id, comment_message, emotional_grade, version) VALUES' + (args))
+
     cursor.close()
     connection.commit()
