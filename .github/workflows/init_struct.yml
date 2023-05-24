@@ -1,7 +1,7 @@
-name: Dataset Workflow
+name: Database Init
 on: [workflow_dispatch]
 jobs:
-  LoadDataset:
+  InitDatabase:
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo content
@@ -12,4 +12,4 @@ jobs:
         env:
           DB_USERNAME: admangarakov
           DB_PASSWORD: ${{secrets.DBPASSWORD}}
-        run: python src/dataset_loading.py "videos-stats.csv"
+        run: python src/database_init.py
