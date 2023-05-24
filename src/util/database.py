@@ -9,6 +9,23 @@ def connect_database():
     return conn
 
 
+def create_data_structure(connection):
+    cursor = connection.cursor()
+
+    cursor.execute(sql.SQL("CREATE TABLE {table}(id int primary key, comment_message text, emotional_grade integer, version integer)")
+                   .format(table=sql.Identifier("Dataset")))
+
+    cursor.execute(sql.SQL(
+        "CREATE TABLE {table}(model_id int primary key, model_name text, weights text, version integer, f1_score decimal, data_version integer)")
+                   .format(table=sql.Identifier("Model")))
+
+    cursor.execute(sql.SQL(
+        "CREATE TABLE {table}(id int primary key, commemt_message text, emmotional_grade integer)")
+                   .format(table=sql.Identifier("Preprocessed_Dataset")))
+    cursor.close()
+    connection.commit()
+
+
 def save_dataset(df, connection, table_name, create_indices=False):
     cursor = connection.cursor()
     cursor.execute(sql.SQL("DROP TABLE IF EXISTS {table}").format(table=sql.Identifier(table_name)))
