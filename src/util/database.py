@@ -32,6 +32,6 @@ def save_dataset(df, connection):
     for index, row in df.iterrows():
         cursor.execute(sql.SQL("INSERT INTO {table}(id, comment_message, emotional_grade, version) values (%s, %s, %s, %s)")
                        .format(table=sql.Identifier("Dataset")),
-                       (row["Unnamed: 0"], row["Comment"], row["Sentiment"]), "1")
+                       (row["Unnamed: 0"], row["Comment"], row["Sentiment"], "1"))
     cursor.close()
     connection.commit()
