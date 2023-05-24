@@ -16,7 +16,7 @@ jobs:
       - name: unpack dataset archive
         run: unzip youtube-statistics.zip
       - name: install script requirements
-        run: pip install -r src/requirements.txt
+        run: pip install -r requirements.txt
       - name: fill database
         env:
           DB_USERNAME: admangarakov
