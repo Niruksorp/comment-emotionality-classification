@@ -1,0 +1,14 @@
+name: Preprocessing Workflow
+on: [workflow_dispatch]
+jobs:
+  LoadDataset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install script requirements
+        run: pip install -r requirements.txt
+      - name: preprocess dataset
+        env:
+          DB_PASS: ${{secrets.DB_PASS}}
+        run: python src/data_preprocessing.py

@@ -5,8 +5,10 @@ from psycopg2 import sql
 
 
 def connect_database():
-    conn = psycopg2.connect(
-        "postgres://admangarakov:zGKsv6rsX01790iaEivPCxc6TeC6cRvj@dpg-chn1bvak728vrd9a9ed0-a.oregon-postgres.render.com/aais")
+    user = 'admangarakov'
+    pwd = os.getenv('DB_PASS')
+    dbname = 'aais'
+    conn = psycopg2.connect(f"postgres://{user}:{pwd}@dpg-chn1bvak728vrd9a9ed0-a.oregon-postgres.render.com/{dbname}")
     return conn
 
 
@@ -22,7 +24,7 @@ def create_data_structure(connection):
                    .format(table=sql.Identifier("model")))
 
     cursor.execute(sql.SQL(
-        "CREATE TABLE {table}(id int primary key, commemt_message text, emmotional_grade integer)")
+        "CREATE TABLE {table}(id int primary key, comment_message text, emotional_grade integer)")
                    .format(table=sql.Identifier("preprocessed_dataset")))
     cursor.close()
     connection.commit()
@@ -46,7 +48,10 @@ def save_dataset(df, connection):
 
 def save_prepared_dataset(df, connection):
     cursor = connection.cursor()
-
+    cursor.execute('DROP TABLE IF EXISTS preprocessed_dataset')
+    cursor.execute(sql.SQL(
+        "CREATE TABLE {table}(id int primary key, comment_message text, emotional_grade integer)")
+                   .format(table=sql.Identifier("preprocessed_dataset")))
     values = []
     for index, row in df.iterrows():
         values.append((index, row["CommentMessage"], row["Sentiment"]))
@@ -58,3 +63,19 @@ def save_prepared_dataset(df, connection):
 
     cursor.close()
     connection.commit()
+
+
+def download_dataset(connection, table_name):
+    cursor = connection.cursor()
+    cursor.execute(sql.SQL("SELECT * FROM {table}").format(table=sql.Identifier(table_name)))
+    result = cursor.fetchall()
+    comment_message = []
+    emotional_grade = []
+    ids = []
+    for row in result:
+        ids.append(row[0])
+        comment_message.append(row[1])
+        emotional_grade.append(row[2])
+    df = pd.DataFrame({"CommentMessage": comment_message, "Sentiment": emotional_grade})
+    cursor.close()
+    return df
