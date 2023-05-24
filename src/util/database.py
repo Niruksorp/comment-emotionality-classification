@@ -26,18 +26,12 @@ def create_data_structure(connection):
     connection.commit()
 
 
-def save_dataset(df, connection, table_name, create_indices=False):
+def save_dataset(df, connection):
     cursor = connection.cursor()
-    cursor.execute(sql.SQL("DROP TABLE IF EXISTS {table}").format(table=sql.Identifier(table_name)))
-    if create_indices:
-        cursor.execute(sql.SQL("CREATE TABLE {table}(id int primary key, resume text, category text)")
-                       .format(table=sql.Identifier(table_name)))
-    else:
-        cursor.execute(sql.SQL("CREATE TABLE {table}(id int primary key, resume text, category int)")
-                       .format(table=sql.Identifier(table_name)))
+
     for index, row in df.iterrows():
-        cursor.execute(sql.SQL("INSERT INTO {table}(id, resume, category) values (%s, %s, %s)")
-                       .format(table=sql.Identifier(table_name)),
-                       (index if create_indices else row["Id"], row["Resume"], row["Category"]))
+        cursor.execute(sql.SQL("INSERT INTO {table}(id, comment_message, emotional_grade, version) values (%s, %s, %s, %s)")
+                       .format(table=sql.Identifier("Dataset")),
+                       (row["Unnamed: 0"], row["Comment"], row["Sentiment"]), "1")
     cursor.close()
     connection.commit()
