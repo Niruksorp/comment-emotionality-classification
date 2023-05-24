@@ -21,4 +21,4 @@ jobs:
         env:
           DB_USERNAME: admangarakov
           DB_PASSWORD: ${{secrets.DBPASSWORD}}
-        run: python src/dataset_loading.py "Curriculum Vitae.csv"
+        run: python src/dataset_loading.py "videos-stats.csv"
