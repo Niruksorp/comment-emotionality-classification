@@ -7,5 +7,6 @@ jobs:
       - uses: actions/checkout@master
       - name: deploy
         run: |
+          ls
           kubectl apply -f manifest.yaml
           
