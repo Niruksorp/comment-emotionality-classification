@@ -1,10 +1,10 @@
-from util.database import connect_database, save_prepared_dataset, download_dataset
-
+import util.database as db
+import logging
 import os
 import torch
 import time
 import numpy as np
-
+import sys
 
 from transformers import AutoTokenizer, AutoModel
 
@@ -16,7 +16,7 @@ model = AutoModel.from_pretrained("cointegrated/rubert-tiny2")
 MAX_SEQUENCE_LENGTH = 2048
 model.max_seq_length = MAX_SEQUENCE_LENGTH
 
-batch_size = 8
+batch_size = 16
 
 
 def get_embs(batch):
@@ -29,25 +29,27 @@ def get_embs(batch):
     return embeddings
 
 
-def main():
-    connection = connect_database()
-    dataset = download_dataset(connection, DATASET_TABLE_NAME)
-    connection.close()
-    vectorized_msg = []
+def main(timeout_min):
+    db.clear_preprocessed_data()
+    start_ind = db.get_start_ind_for_prepared_ds()
+    dataset = db.download_dataset(DATASET_TABLE_NAME)
     start_time = time.time()
     for start_pos in range(0, len(dataset), batch_size):
         if start_pos + batch_size >= len(dataset):
             break
         batch = dataset.iloc[start_pos:start_pos + batch_size]
         text_data = batch['CommentMessage'].tolist()
-        vectorized_msg += get_embs(text_data).numpy().tolist()
-        print(f'Processed rows: {start_pos+batch_size}. Time spent: {time.time() - start_time}')
-    processed_dataset = dataset.iloc[:len(vectorized_msg)]
-    processed_dataset['CommentMessage'] = vectorized_msg
-    connection = connect_database()
-    save_prepared_dataset(processed_dataset, connection)
-    connection.close()
+        batch['CommentMessage'] = get_embs(text_data).numpy().tolist()
+        db.save_prepared_dataset(batch, start_ind)
+        start_ind += batch_size
+        logging.warning(f'Processed rows: {start_pos + batch_size}. Time spent: {time.time() - start_time}')
+        if time.time() - start_time > int(timeout_min)*60:
+            logging.warning('Finish by timeout')
+            break
 
 
 if __name__ == "__main__":
-    main()
+    timeout = 1
+    if len(sys.argv) > 1:
+        timeout = int(sys.argv[1])
+    main(timeout)

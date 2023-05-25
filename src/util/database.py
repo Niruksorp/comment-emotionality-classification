@@ -6,7 +6,7 @@ from psycopg2 import sql
 
 def connect_database():
     user = 'admangarakov'
-    pwd = os.getenv('DB_PASS')
+    pwd = 'zGKsv6rsX01790iaEivPCxc6TeC6cRvj'
     dbname = 'aais'
     conn = psycopg2.connect(f"postgres://{user}:{pwd}@dpg-chn1bvak728vrd9a9ed0-a.oregon-postgres.render.com/{dbname}")
     return conn
@@ -46,26 +46,50 @@ def save_dataset(df, connection):
     connection.commit()
 
 
-def save_prepared_dataset(df, connection):
+def clear_preprocessed_data():
+    connection = connect_database()
     cursor = connection.cursor()
     cursor.execute('DROP TABLE IF EXISTS preprocessed_dataset')
     cursor.execute(sql.SQL(
         "CREATE TABLE {table}(id int primary key, comment_message text, emotional_grade integer)")
                    .format(table=sql.Identifier("preprocessed_dataset")))
+    cursor.close()
+    connection.commit()
+    connection.close()
+
+
+def get_start_ind_for_prepared_ds():
+    connection = connect_database()
+    cursor = connection.cursor()
+    cursor.execute('SELECT id FROM preprocessed_dataset order by id desc limit 1')
+    max_id = cursor.fetchall()
+    if len(max_id) == 0:
+        max_id = 0
+    else:
+        max_id = int(max_id[0][0])
+    cursor.close()
+    connection.commit()
+    connection.close()
+    return max_id
+
+
+def save_prepared_dataset(df, start_ind):
+    connection = connect_database()
+    cursor = connection.cursor()
     values = []
     for index, row in df.iterrows():
-        values.append((index, row["CommentMessage"], row["Sentiment"]))
+        values.append((index+start_ind, row["CommentMessage"], row["Sentiment"]))
 
     args = ','.join(cursor.mogrify("(%s,%s,%s)", i).decode('utf-8')
                     for i in values)
 
-    cursor.execute('INSERT INTO preprocessed_dataset (id, comment_message, emotional_grade) VALUES' + (args))
-
+    cursor.execute('INSERT INTO preprocessed_dataset (id, comment_message, emotional_grade) VALUES' + args)
     cursor.close()
     connection.commit()
 
 
-def download_dataset(connection, table_name):
+def download_dataset(table_name):
+    connection = connect_database()
     cursor = connection.cursor()
     cursor.execute(sql.SQL("SELECT * FROM {table}").format(table=sql.Identifier(table_name)))
     result = cursor.fetchall()
@@ -78,4 +102,6 @@ def download_dataset(connection, table_name):
         emotional_grade.append(row[2])
     df = pd.DataFrame({"CommentMessage": comment_message, "Sentiment": emotional_grade})
     cursor.close()
+    connection.commit()
+    connection.close()
     return df

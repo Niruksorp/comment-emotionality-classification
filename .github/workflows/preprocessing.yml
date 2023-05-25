@@ -11,4 +11,4 @@ jobs:
       - name: preprocess dataset
         env:
           DB_PASS: ${{secrets.DB_PASS}}
-        run: python src/data_preprocessing.py
+        run: python src/data_preprocessing.py 30
