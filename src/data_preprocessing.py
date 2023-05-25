@@ -32,6 +32,7 @@ def get_embs(batch):
 def main():
     connection = connect_database()
     dataset = download_dataset(connection, DATASET_TABLE_NAME)
+    connection.close()
     vectorized_msg = []
     start_time = time.time()
     for start_pos in range(0, len(dataset), batch_size):
@@ -43,7 +44,9 @@ def main():
         print(f'Processed rows: {start_pos+batch_size}. Time spent: {time.time() - start_time}')
     processed_dataset = dataset.iloc[:len(vectorized_msg)]
     processed_dataset['CommentMessage'] = vectorized_msg
+    connection = connect_database()
     save_prepared_dataset(processed_dataset, connection)
+    connection.close()
 
 
 if __name__ == "__main__":
