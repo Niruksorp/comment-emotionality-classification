@@ -1,0 +1,38 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: comment-emotionality-app
+  labels:
+    app: comment-emotionality
+spec:
+  containers:
+  - name: comment-emotionality-app
+    image: niruksorp/ifmo-comment-emmotionaly
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: comment-emotionality-service
+spec:
+  selector:
+    app: comment-emotionality
+  ports:
+  - port: 5000
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: comment-emotionality-service
+            port:
+              number: 5000
