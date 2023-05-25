@@ -1,4 +1,4 @@
-name: Dataset Workflow
+name: Deploy to k8s
 on: [workflow_dispatch]
 jobs:
   deploy:
