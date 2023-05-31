@@ -1,10 +1,9 @@
 import torch
-import database as db
 
 PATH = "../entire_model.pt"
 
 
-def save_model(model, name, score):
+def prepare_model_to_save(model, name, score):
     # Save
     print(f'Start saving model with name: {name} and score: {score}')
     torch.save(model, PATH)
@@ -12,5 +11,5 @@ def save_model(model, name, score):
     with open(PATH, "rb") as f:
         while byte := f.read(1):
             byte_array += byte
-    db.save_model(byte_array, name, score)
     print('Model saved')
+    return byte_array, name, score

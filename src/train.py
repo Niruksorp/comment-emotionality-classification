@@ -86,5 +86,5 @@ acc = Accuracy(task="multiclass", num_classes=3)
 res_acc = acc(res, y_test).item()
 print(f'Accuracy: {res_acc}')
 
-mh.save_model(model_log_reg, 'log_reg', res_acc)
-
+prepared = mh.prepare_model_to_save(model_log_reg, 'log_reg', res_acc)
+db.save_model(*prepared)
