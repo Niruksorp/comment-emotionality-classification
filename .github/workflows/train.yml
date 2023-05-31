@@ -1,0 +1,14 @@
+name: Train Workflow
+on: [workflow_dispatch]
+jobs:
+  Train:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install script requirements
+        run: pip install -r requirements.txt
+      - name: train
+        env:
+          DB_PASS: ${{secrets.DB_PASS}}
+        run: python src/train.py

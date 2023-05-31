@@ -16,15 +16,15 @@ def create_data_structure(connection):
     cursor = connection.cursor()
 
     cursor.execute(sql.SQL(
-        "CREATE TABLE {table}(id int primary key, comment_message text, emotional_grade integer, version integer)")
+        "CREATE TABLE IF NOT EXISTS {table}(id int primary key, comment_message text, emotional_grade integer, version integer)")
                    .format(table=sql.Identifier("dataset")))
 
     cursor.execute(sql.SQL(
-        "CREATE TABLE {table}(model_id int primary key, model_name text, weights text, version integer, f1_score decimal, data_version integer)")
+        "CREATE TABLE IF NOT EXISTS {table}(model_id int primary key, model_name text, weights bytea, version integer, score decimal, data_version integer)")
                    .format(table=sql.Identifier("model")))
 
     cursor.execute(sql.SQL(
-        "CREATE TABLE {table}(id int primary key, comment_message text, emotional_grade integer)")
+        "CREATE TABLE IF NOT EXISTS {table}(id int primary key, comment_message text, emotional_grade integer)")
                    .format(table=sql.Identifier("preprocessed_dataset")))
     cursor.close()
     connection.commit()
@@ -78,7 +78,7 @@ def save_prepared_dataset(df, start_ind):
     cursor = connection.cursor()
     values = []
     for index, row in df.iterrows():
-        values.append((index+start_ind, row["CommentMessage"], row["Sentiment"]))
+        values.append((index + start_ind, row["CommentMessage"], row["Sentiment"]))
 
     args = ','.join(cursor.mogrify("(%s,%s,%s)", i).decode('utf-8')
                     for i in values)
@@ -105,3 +105,30 @@ def download_dataset(table_name):
     connection.commit()
     connection.close()
     return df
+
+
+def save_model(model, name, score):
+    insert_model_sql = '''
+    INSERT INTO model (model_id, model_name, weights, version, score, data_version) 
+    VALUES (%s, %s, %s, %s, %s, %s)
+    '''
+    connection = connect_database()
+    cursor = connection.cursor()
+    cursor.execute(sql.SQL("SELECT MAX(version) from model group by model_name"))
+    model_version = cursor.fetchone()
+    if model_version is None or len(model_version) == 0:
+        model_version = 1
+    else:
+        model_version = int(model_version[0]) + 1
+
+    cursor.execute(sql.SQL("SELECT model_id from model order by model_id desc limit 1"))
+    model_id = cursor.fetchone()
+    if model_id is None or len(model_id) == 0:
+        model_id = 1
+    else:
+        model_id = int(model_id[0]) + 1
+
+    data_version = 1
+    cursor.execute(insert_model_sql, (model_id, name, psycopg2.Binary(model), model_version, score, data_version))
+    connection.commit()
+    connection.close()
