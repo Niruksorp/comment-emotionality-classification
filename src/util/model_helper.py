@@ -1,5 +1,5 @@
 import torch
-import src.util.database as db
+import database as db
 
 PATH = "../entire_model.pt"
 
