@@ -62,10 +62,10 @@ jobs:
       - name: vectorize dataset
         env:
           DB_PASSWORD: ${{secrets.DB_PASS}}
-        run: python src/data_preprocessing.py 7
+        run: python src/data_preprocessing.py 5
 
   train:
-    if: github.event.inputs.update_best_model == 'False'
+    if: github.event.inputs.update_last_model == 'False'
     needs: vectorize_dataset
     runs-on: ubuntu-latest
     steps:
@@ -79,7 +79,7 @@ jobs:
         run: python src/train.py 100
 
   retrain:
-    if: github.event.inputs.update_best_model == 'True'
+    if: github.event.inputs.update_last_model == 'True'
     needs: vectorize_dataset
     runs-on: ubuntu-latest
     steps:
