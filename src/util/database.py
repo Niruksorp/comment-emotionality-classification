@@ -40,7 +40,10 @@ def create_data_structure(connection):
 
 def save_dataset(df, connection):
     cursor = connection.cursor()
-
+    cursor.execute('DROP TABLE IF EXISTS dataset')
+    cursor.execute(sql.SQL(
+        "CREATE TABLE IF NOT EXISTS {table}(id int primary key, comment_message text, emotional_grade integer, version integer)")
+                   .format(table=sql.Identifier("dataset")))
     values = []
     for index, row in df.iterrows():
         values.append((index, row["Comment"], row["Sentiment"], "1"))
