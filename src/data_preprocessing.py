@@ -30,7 +30,7 @@ def get_embs(batch):
 
 
 def main(timeout_min):
-    db.clear_preprocessed_data()
+    # db.clear_preprocessed_data()
     start_ind = db.get_start_ind_for_prepared_ds()
     dataset = db.download_dataset(DATASET_TABLE_NAME)
     start_time = time.time()

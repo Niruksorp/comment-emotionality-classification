@@ -59,7 +59,7 @@ def clear_preprocessed_data():
     cursor = connection.cursor()
     cursor.execute('DROP TABLE IF EXISTS preprocessed_dataset')
     cursor.execute(sql.SQL(
-        "CREATE TABLE {table}(id int primary key, comment_message text, emotional_grade integer)")
+        "CREATE TABLE IF NOT EXISTS {table}(id int primary key, comment_message text, emotional_grade integer)")
                    .format(table=sql.Identifier("preprocessed_dataset")))
     cursor.close()
     connection.commit()
@@ -94,6 +94,7 @@ def save_prepared_dataset(df, start_ind):
     cursor.execute('INSERT INTO preprocessed_dataset (id, comment_message, emotional_grade) VALUES' + args)
     cursor.close()
     connection.commit()
+    connection.close()
 
 
 def download_dataset(table_name):

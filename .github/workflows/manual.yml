@@ -1,0 +1,127 @@
+name: Training
+on:
+  workflow_dispatch:
+    inputs:
+      update_last_model:
+        type: choice
+        description: update last model?
+        options:
+          - True
+          - False
+
+jobs:
+  init_database:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      - name: install script requirements
+        run: pip install -r src/requirements.txt
+      - name: init database
+        env:
+          DB_USERNAME: admangarakov
+          DB_PASSWORD: ${{secrets.DBPASSWORD}}
+        run: python src/database_init.py
+
+  load_dataset:
+    needs: init_database
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install kaggle API
+        run: pip install kaggle
+      - name: download dataset
+        env:
+          KAGGLE_USERNAME: niruksorp11
+          KAGGLE_KEY: ${{secrets.KAGGLE_PASS}}
+        run: kaggle datasets download advaypatil/youtube-statistics
+      - name: unpack dataset archive
+        run: unzip youtube-statistics.zip
+      - name: install script requirements
+        run: pip install -r requirements.txt
+      - name: fill database
+        env:
+          DB_USERNAME: admangarakov
+          DB_PASSWORD: ${{secrets.DBPASSWORD}}
+        run: python src/dataset_loading.py "comments.csv"
+
+  vectorize_dataset:
+    needs: load_dataset
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install script requirements
+        run: pip install -r requirements.txt
+      - name: vectorize dataset
+        env:
+          DB_PASS: ${{secrets.DB_PASS}}
+        run: python src/data_preprocessing.py 7
+
+  train:
+    if: github.event.inputs.update_best_model == 'False'
+    needs: vectorize_dataset
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install script requirements
+        run: pip install -r requirements.txt
+      - name: train
+        env:
+          DB_PASS: ${{secrets.DB_PASS}}
+        run: python src/train.py 100
+
+  retrain:
+    if: github.event.inputs.update_best_model == 'True'
+    needs: vectorize_dataset
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install script requirements
+        run: pip install -r requirements.txt
+      - name: retraining
+        env:
+          DB_PASS: ${{secrets.DB_PASS}}
+        run: python src/retraining.py 100 log_reg
+
+  build:
+    if: ${{ always() }}
+    needs: [retrain, train]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install script requirements
+        run: pip install -r requirements.txt
+      - name: prepare for deploy
+        env:
+          DB_PASS: ${{secrets.DB_PASS}}
+        run: python src/prepare_deploy.py
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - name: Build Docker image
+        run: docker build . --file Dockerfile --tag niruksorp/ifmo-comment-emmotionaly
+      - name: Push into Docker Hub
+        run: docker push niruksorp/ifmo-comment-emmotionaly
+
+  deploy:
+    if: ${{ always() }}
+    needs: [ buidl ]
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@master
+      - name: deploy
+        run: |
+          ls
+          kubectl apply -f manifest.yaml
+          
