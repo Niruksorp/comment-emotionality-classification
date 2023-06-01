@@ -93,7 +93,6 @@ jobs:
         run: python src/retraining.py 100 log_reg
 
   build:
-    if: ${{ always() }}
     needs: [retrain, train]
     runs-on: ubuntu-latest
     steps:
@@ -115,7 +114,6 @@ jobs:
         run: docker push niruksorp/ifmo-comment-emmotionaly
 
   deploy:
-    if: ${{ always() }}
     needs: [ build ]
     runs-on: self-hosted
     steps:
