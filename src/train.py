@@ -74,7 +74,7 @@ def evaluate_model(model, dataset):
     acc = Accuracy(task="multiclass", num_classes=3)
     res_acc = acc(res, y_test).item()
     print(f'Accuracy: {res_acc}')
-    return acc
+    return res_acc
 
 
 def save_model(model, name, score):
