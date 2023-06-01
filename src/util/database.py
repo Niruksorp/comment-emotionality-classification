@@ -26,6 +26,14 @@ def create_data_structure(connection):
     cursor.execute(sql.SQL(
         "CREATE TABLE IF NOT EXISTS {table}(id int primary key, comment_message text, emotional_grade integer)")
                    .format(table=sql.Identifier("preprocessed_dataset")))
+
+    cursor.execute(sql.SQL(
+        "CREATE TABLE IF NOT EXISTS {table}(id int primary key, model_id integer)")
+                   .format(table=sql.Identifier("deploy")))
+
+    cursor.execute(sql.SQL(
+        "CREATE TABLE IF NOT EXISTS {table}(lock integer)")
+                   .format(table=sql.Identifier("deploy_lock")))
     cursor.close()
     connection.commit()
 
@@ -154,3 +162,32 @@ def load_latest_model_by_name(name):
     if model_memview is None:
         raise Exception(f'Model not found by name: {name}!')
     return bytes(model_memview)
+
+
+def best_model_deploy():
+    connection = connect_database()
+    cursor = connection.cursor()
+    cursor.execute(sql.SQL("SELECT model_id FROM {table} WHERE score = ( SELECT MAX(score) FROM {table} )")
+                   .format(table=sql.Identifier("model")))
+    result = cursor.fetchall()
+    cursor.execute('INSERT INTO deploy (id, model_id) VALUES(%s, %s)',
+                       (str(1), result[0]))
+    cursor.close()
+    connection.commit()
+    connection.close()
+
+
+def best_model():
+    connection = connect_database()
+    cursor = connection.cursor()
+    cursor.execute(sql.SQL("SELECT model_id FROM {table} WHERE id = 1")
+                   .format(table=sql.Identifier("deploy")))
+    result = cursor.fetchall()
+    cursor.execute(sql.SQL('SELECT weights FROM model WHERE model_id = %s'),(result[0]))
+
+    data = cursor.fetchone()[0]
+    cursor.close()
+    connection.commit()
+    connection.close()
+
+    return bytes(data)
