@@ -61,7 +61,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: vectorize dataset
         env:
-          DB_PASS: ${{secrets.DB_PASS}}
+          DB_PASSWORD: ${{secrets.DB_PASS}}
         run: python src/data_preprocessing.py 7
 
   train:
@@ -75,7 +75,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: train
         env:
-          DB_PASS: ${{secrets.DB_PASS}}
+          DB_PASSWORD: ${{secrets.DB_PASS}}
         run: python src/train.py 100
 
   retrain:
@@ -89,7 +89,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: retraining
         env:
-          DB_PASS: ${{secrets.DB_PASS}}
+          DB_PASSWORD: ${{secrets.DB_PASS}}
         run: python src/retraining.py 100 log_reg
 
   build:
@@ -101,7 +101,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: prepare for deploy
         env:
-          DB_PASS: ${{secrets.DB_PASS}}
+          DB_PASSWORD: ${{secrets.DB_PASS}}
         run: python src/prepare_deploy.py
       - name: Log in to Docker Hub
         env:
