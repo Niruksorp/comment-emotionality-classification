@@ -170,8 +170,16 @@ def best_model_deploy():
     cursor.execute(sql.SQL("SELECT model_id FROM {table} WHERE score = ( SELECT MAX(score) FROM {table} )")
                    .format(table=sql.Identifier("model")))
     result = cursor.fetchall()
+
+    cursor.execute(sql.SQL("SELECT MAX(id) from deploy"))
+    id = cursor.fetchone()
+    if id is None or len(id) == 0:
+        id = 1
+    else:
+        id = int(id[0]) + 1
+
     cursor.execute('INSERT INTO deploy (id, model_id) VALUES(%s, %s)',
-                       (str(1), result[0]))
+                       (id, result[0]))
     cursor.close()
     connection.commit()
     connection.close()
@@ -180,10 +188,10 @@ def best_model_deploy():
 def best_model():
     connection = connect_database()
     cursor = connection.cursor()
-    cursor.execute(sql.SQL("SELECT model_id FROM {table} WHERE id = 1")
+    cursor.execute(sql.SQL("SELECT model_id FROM {table} ORDER BY id DESC LIMIT 1")
                    .format(table=sql.Identifier("deploy")))
     result = cursor.fetchall()
-    cursor.execute(sql.SQL('SELECT weights FROM model WHERE model_id = %s'),(result[0]))
+    cursor.execute(sql.SQL('SELECT weights FROM model WHERE model_id = %s'), (result[0]))
 
     data = cursor.fetchone()[0]
     cursor.close()
