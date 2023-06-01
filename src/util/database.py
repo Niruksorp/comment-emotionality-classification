@@ -6,7 +6,7 @@ from psycopg2 import sql
 
 def connect_database():
     user = 'admangarakov'
-    pwd = os.getenv('DB_PASS')
+    pwd = os.getenv('DB_PASSWORD')
     dbname = 'aais'
     conn = psycopg2.connect(f"postgres://{user}:{pwd}@dpg-chn1bvak728vrd9a9ed0-a.oregon-postgres.render.com/{dbname}")
     return conn
