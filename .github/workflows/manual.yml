@@ -115,6 +115,7 @@ jobs:
         run: docker push niruksorp/ifmo-comment-emmotionaly
 
   deploy:
+    if: ${{ always() }}
     needs: build
     runs-on: self-hosted
     steps:
