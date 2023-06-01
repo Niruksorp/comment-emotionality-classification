@@ -8,6 +8,7 @@ spec:
   containers:
   - name: comment-emotionality-app
     image: niruksorp/ifmo-comment-emmotionaly
+    imagePullPolicy: Always
 ---
 
 kind: Service
