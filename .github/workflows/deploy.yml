@@ -5,6 +5,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: preprocess dataset
+      env:
+        DB_PASS: ${{secrets.DB_PASS}}
+      run: python src/prepare_deploy.py
     - name: Log in to Docker Hub
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
