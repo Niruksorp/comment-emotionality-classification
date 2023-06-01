@@ -15,11 +15,12 @@ jobs:
     steps:
       - name: checkout repo content
         uses: actions/checkout@v3
-      - name: install script requirements
+      - name: setup python
       - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
           cache: 'pip'
+      - name: install script requirements
         run: pip install -r src/requirements.txt
       - name: init database
         env:
