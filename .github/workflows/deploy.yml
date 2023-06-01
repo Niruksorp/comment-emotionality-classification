@@ -5,6 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: install script requirements
+      run: pip install -r requirements.txt
     - name: preprocess dataset
       env:
         DB_PASS: ${{secrets.DB_PASS}}
