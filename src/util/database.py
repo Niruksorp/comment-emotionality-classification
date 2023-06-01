@@ -185,7 +185,9 @@ def best_model():
     result = cursor.fetchall()
     cursor.execute(sql.SQL('SELECT weights FROM model WHERE model_id = %s'),(result[0]))
 
-    result1= cursor.fetchall()
+    data = cursor.fetchone()[0]
     cursor.close()
     connection.commit()
     connection.close()
+
+    return bytes(data)
