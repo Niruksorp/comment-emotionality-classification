@@ -25,7 +25,7 @@ jobs:
       - name: init database
         env:
           DB_USERNAME: admangarakov
-          DB_PASS: ${{secrets.DB_PASS}}
+          DB_PASSWORD: ${{secrets.DB_PASS}}
         run: python src/database_init.py
 
   load_dataset:
@@ -48,7 +48,7 @@ jobs:
       - name: fill database
         env:
           DB_USERNAME: admangarakov
-          DB_PASS: ${{secrets.DB_PASS}}
+          DB_PASSWORD: ${{secrets.DB_PASS}}
         run: python src/dataset_loading.py "comments.csv"
 
   vectorize_dataset:
