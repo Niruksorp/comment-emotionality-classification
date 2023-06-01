@@ -21,7 +21,7 @@ jobs:
           cache: 'pip'
         uses: actions/setup-python@v4
       - name: install script requirements
-        run: pip install -r src/requirements.txt
+        run: pip install -r requirements.txt
       - name: init database
         env:
           DB_USERNAME: admangarakov
