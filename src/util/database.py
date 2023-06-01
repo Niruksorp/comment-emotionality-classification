@@ -103,7 +103,7 @@ def save_prepared_dataset(df, start_ind):
 def download_dataset(table_name):
     connection = connect_database()
     cursor = connection.cursor()
-    cursor.execute(sql.SQL("SELECT * FROM {table}").format(table=sql.Identifier(table_name)))
+    cursor.execute(sql.SQL("SELECT * FROM {table} order by id ").format(table=sql.Identifier(table_name)))
     result = cursor.fetchall()
     comment_message = []
     emotional_grade = []
