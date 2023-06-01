@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 import util.database as db
 import util.model_helper as mh
+from model import logistic_regression
 
 
 def get_and_split_ds():
@@ -21,16 +22,6 @@ def get_and_split_ds():
     y_train = torch.tensor(np.array(train['Sentiment'].values.tolist()), dtype=torch.long)
 
     return X_test, y_test, X_train, y_train
-
-
-class LogisticRegression(torch.nn.Module):
-    def __init__(self, input_dim, output_dim):
-        super(LogisticRegression, self).__init__()
-        self.linear = torch.nn.Linear(input_dim, output_dim)
-
-    def forward(self, x):
-        outputs = torch.sigmoid(self.linear(x))
-        return outputs
 
 
 def train_model(epochs, model, optimizer, criterion, dataset):
@@ -83,8 +74,8 @@ def save_model(model, name, score):
 
 
 def main(epochs):
+    model_log_reg = logistic_regression.create_model()
     dataset = get_and_split_ds()
-    model_log_reg = LogisticRegression(312, 3)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model_log_reg.parameters(), lr=0.001)
     train_model(epochs, model_log_reg, optimizer, criterion, dataset)

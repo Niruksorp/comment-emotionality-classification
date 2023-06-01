@@ -132,3 +132,25 @@ def save_model(model, name, score):
     cursor.execute(insert_model_sql, (model_id, name, psycopg2.Binary(model), model_version, score, data_version))
     connection.commit()
     connection.close()
+
+
+def load_latest_model_by_name(name):
+    connection = connect_database()
+    cursor = connection.cursor()
+    cursor.execute("SELECT MAX(version) from model where model_name = %s", (name,))
+    version = cursor.fetchone()
+    if version is not None and len(version) > 0:
+        version = int(version[0])
+    else:
+        version = 1
+    select_latest_model_by_name_query = '''
+        SELECT weights 
+        FROM model
+        WHERE model_name = %s
+        and version = %s
+    '''
+    cursor.execute(select_latest_model_by_name_query, (name, version,))
+    model_memview = cursor.fetchone()[0]
+    if model_memview is None:
+        raise Exception(f'Model not found by name: {name}!')
+    return bytes(model_memview)
