@@ -1,8 +1,6 @@
 import io
 import torch
 
-PATH = "../entire_model.pt"
-
 
 def prepare_model_to_save(model, name, score):
     # Save

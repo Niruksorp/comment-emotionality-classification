@@ -78,6 +78,20 @@ jobs:
           DB_PASSWORD: ${{secrets.DB_PASS}}
         run: python src/train.py 100
 
+  train_perceptron:
+    if: github.event.inputs.update_last_model == 'False'
+    needs: vectorize_dataset
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install script requirements
+        run: pip install -r requirements.txt
+      - name: train_perceptron
+        env:
+          DB_PASSWORD: ${{secrets.DB_PASS}}
+        run: python src/train_perceptron.py 100
+
   retrain:
     if: github.event.inputs.update_last_model == 'True'
     needs: vectorize_dataset
@@ -92,9 +106,23 @@ jobs:
           DB_PASSWORD: ${{secrets.DB_PASS}}
         run: python src/retraining.py 100 log_reg
 
+  retrain_perceptron:
+    if: github.event.inputs.update_last_model == 'True'
+    needs: vectorize_dataset
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install script requirements
+        run: pip install -r requirements.txt
+      - name: retrain_perceptron
+        env:
+          DB_PASSWORD: ${{secrets.DB_PASS}}
+        run: python src/retraining_perceprton.py 10 log_reg
+
   build:
     if: ${{ always() }}
-    needs: [retrain, train]
+    needs: [retrain, retrain_perceptron, train, train_perceptron]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

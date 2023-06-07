@@ -6,7 +6,7 @@ from psycopg2 import sql
 
 def connect_database():
     user = 'admangarakov'
-    pwd = os.getenv('DB_PASSWORD')
+    pwd = 'zGKsv6rsX01790iaEivPCxc6TeC6cRvj'
     dbname = 'aais'
     conn = psycopg2.connect(f"postgres://{user}:{pwd}@dpg-chn1bvak728vrd9a9ed0-a.oregon-postgres.render.com/{dbname}")
     return conn
@@ -28,7 +28,7 @@ def create_data_structure(connection):
                    .format(table=sql.Identifier("preprocessed_dataset")))
 
     cursor.execute(sql.SQL(
-        "CREATE TABLE IF NOT EXISTS {table}(id int primary key, model_id integer)")
+        "CREATE TABLE IF NOT EXISTS {table}(id int primary key, model_id integer, model_name text)")
                    .format(table=sql.Identifier("deploy")))
 
     cursor.execute(sql.SQL(
@@ -171,7 +171,7 @@ def load_latest_model_by_name(name):
 def best_model_deploy():
     connection = connect_database()
     cursor = connection.cursor()
-    cursor.execute(sql.SQL("SELECT model_id FROM {table} WHERE score = ( SELECT MAX(score) FROM {table} )")
+    cursor.execute(sql.SQL("SELECT model_id, model_name FROM {table} WHERE score = ( SELECT MAX(score) FROM {table} )")
                    .format(table=sql.Identifier("model")))
     result = cursor.fetchall()
 
@@ -182,8 +182,8 @@ def best_model_deploy():
     else:
         id = int(id[0]) + 1
 
-    cursor.execute('INSERT INTO deploy (id, model_id) VALUES(%s, %s)',
-                       (id, result[0]))
+    cursor.execute('INSERT INTO deploy (id, model_id, model_name) VALUES(%s, %s, %s)',
+                       (id, result[0][0], result[0][1]))
     cursor.close()
     connection.commit()
     connection.close()
@@ -192,14 +192,14 @@ def best_model_deploy():
 def best_model():
     connection = connect_database()
     cursor = connection.cursor()
-    cursor.execute(sql.SQL("SELECT model_id FROM {table} ORDER BY id DESC LIMIT 1")
+    cursor.execute(sql.SQL("SELECT model_id, model_name FROM {table} ORDER BY id DESC LIMIT 1")
                    .format(table=sql.Identifier("deploy")))
     result = cursor.fetchall()
-    cursor.execute(sql.SQL('SELECT weights FROM model WHERE model_id = %s'), (result[0]))
+    cursor.execute(sql.SQL('SELECT weights FROM model WHERE model_id = %s'), (result[0][0],))
 
     data = cursor.fetchone()[0]
     cursor.close()
     connection.commit()
     connection.close()
 
-    return bytes(data)
+    return bytes(data), result[0][1]
