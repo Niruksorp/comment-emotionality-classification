@@ -4,7 +4,7 @@ import torch
 
 import util.model_helper as mh
 import util.database as db
-from model import logistic_regression
+from model import perceptron
 import train
 import torch.nn.functional as F
 from torch import nn
@@ -43,7 +43,7 @@ class Perceptron(nn.Module):
 
 
 def main(epochs, model_name):
-    model = logistic_regression.create_model()
+    model = perceptron.create_model()
     model = mh.unpack_model(model, db.load_latest_model_by_name(model_name))
     dataset = train.get_and_split_ds()
     criterion = torch.nn.CrossEntropyLoss()
