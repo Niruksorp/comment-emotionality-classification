@@ -164,7 +164,7 @@ jobs:
 
   deploy_k8s:
     if: github.event.inputs.k8s_deploy == 'True'
-    needs: build
+    needs: [retrain, retrain_perceptron, train, train_perceptron]
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@master
