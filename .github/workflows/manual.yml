@@ -16,26 +16,26 @@ on:
           - False
 
 jobs:
-  init_database:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout repo content
-        uses: actions/checkout@v3
-      - name: setup python
-        with:
-          python-version: '3.9'
-          cache: 'pip'
-        uses: actions/setup-python@v4
-      - name: install script requirements
-        run: pip install -r requirements.txt
-      - name: init database
-        env:
-          DB_USERNAME: admangarakov
-          DB_PASSWORD: ${{secrets.DB_PASS}}
-        run: python src/database_init.py
+#  init_database:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: checkout repo content
+#        uses: actions/checkout@v3
+#      - name: setup python
+#        with:
+#          python-version: '3.9'
+#          cache: 'pip'
+#        uses: actions/setup-python@v4
+#      - name: install script requirements
+#        run: pip install -r requirements.txt
+#      - name: init database
+#        env:
+#          DB_USERNAME: admangarakov
+#          DB_PASSWORD: ${{secrets.DB_PASS}}
+#        run: python src/database_init.py
 
   load_dataset:
-    needs: init_database
+#    needs: init_database
     runs-on: ubuntu-latest
     steps:
       - name: checkout repo content
