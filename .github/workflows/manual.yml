@@ -129,6 +129,7 @@ jobs:
   model_deploy:
     if: ${{ always() }}
     needs: [ retrain, retrain_perceptron, train, train_perceptron ]
+    runs-on: ubuntu-latest
     steps:
       - name: checkout repo content
         uses: actions/checkout@v3
