@@ -124,7 +124,7 @@ jobs:
       - name: retrain_perceptron
         env:
           DB_PASSWORD: ${{secrets.DB_PASS}}
-        run: python src/retraining_perceprton.py 10
+        run: python src/retraining_perceptron.py 10
 
   quantization:
     if: ${{ always() }}
