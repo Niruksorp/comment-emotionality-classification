@@ -124,11 +124,39 @@ jobs:
       - name: retrain_perceptron
         env:
           DB_PASSWORD: ${{secrets.DB_PASS}}
-        run: python src/retraining_perceprton.py 10 log_reg
+        run: python src/retraining_perceprton.py 10
+
+  quantization:
+    if: ${{ always() }}
+    needs: [ retrain, train ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install script requirements
+        run: pip install -r requirements.txt
+      - name: quantization
+        env:
+          DB_PASSWORD: ${{secrets.DB_PASS}}
+        run: python src/quantization.py
+
+  quantization_perceptron:
+    if: ${{ always() }}
+    needs: [ retrain_perceptron, train_perceptron ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: install script requirements
+        run: pip install -r requirements.txt
+      - name: quantization_perceptron
+        env:
+          DB_PASSWORD: ${{secrets.DB_PASS}}
+        run: python src/quantization_perceptron.py
 
   model_deploy:
     if: ${{ always() }}
-    needs: [ retrain, retrain_perceptron, train, train_perceptron ]
+    needs: [ quantization, quantization_perceptron ]
     runs-on: self-hosted
     steps:
       - name: checkout repo content
