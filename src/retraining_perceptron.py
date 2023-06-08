@@ -49,8 +49,8 @@ def main(epochs, model_name):
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     train.train_model(epochs, model, optimizer, criterion, dataset)
-    score = train.evaluate_model(model, dataset)
-    train.save_model(model, model_name, score)
+    score, time = train.evaluate_model(model, dataset)
+    train.save_model(model, model_name, score, time)
 
 
 if __name__ == "__main__":

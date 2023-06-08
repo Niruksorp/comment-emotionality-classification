@@ -10,8 +10,8 @@ def main(epochs):
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model_perceptron.parameters(), lr=0.001)
     train.train_model(epochs, model_perceptron, optimizer, criterion, dataset)
-    score = train.evaluate_model(model_perceptron, dataset)
-    train.save_model(model_perceptron, 'perceptron', score)
+    score, time = train.evaluate_model(model_perceptron, dataset)
+    train.save_model(model_perceptron, 'perceptron', score, time)
 
 
 if __name__ == "__main__":

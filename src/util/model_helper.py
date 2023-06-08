@@ -2,15 +2,15 @@ import io
 import torch
 
 
-def prepare_model_to_save(model, name, score):
+def prepare_model_to_save(model, name, score, time):
     # Save
-    print(f'Start saving model with name: {name} and score: {score}')
+    print(f'Start saving model with name: {name} and score: {score}. Time: {time}')
     model_out = io.BytesIO()
     torch.save(model.state_dict(), model_out)
     model_out.seek(0)
     byte_array = model_out.read()
     print('Model saved')
-    return byte_array, name, score
+    return byte_array, name, score, time
 
 
 def unpack_model(model, weights):

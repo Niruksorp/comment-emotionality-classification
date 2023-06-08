@@ -4,6 +4,7 @@ from statistics import mean
 import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
+from torch.profiler import profile, ProfilerActivity
 from torchmetrics import Accuracy
 from tqdm import tqdm
 
@@ -58,18 +59,21 @@ def train_model(epochs, model, optimizer, criterion, dataset):
 def evaluate_model(model, dataset):
     X_test, y_test, _, _ = dataset
     model.eval()
+    with profile(activities=[ProfilerActivity.CPU],
+                 profile_memory=True, record_shapes=True) as prof:
+        with torch.no_grad():
+            res = model(X_test)
 
-    with torch.no_grad():
-        res = model(X_test)
+    self_cpu_time = prof.key_averages().table(sort_by="self_cpu_memory_usage", row_limit=10).split('\n')[-2].split(' ')[-1][:-2]
 
     acc = Accuracy(task="multiclass", num_classes=3)
     res_acc = acc(res, y_test).item()
     print(f'Accuracy: {res_acc}')
-    return res_acc
+    return res_acc, self_cpu_time
 
 
-def save_model(model, name, score):
-    prepared = mh.prepare_model_to_save(model, name, score)
+def save_model(model, name, score, time):
+    prepared = mh.prepare_model_to_save(model, name, score, time)
     db.save_model(*prepared)
 
 
@@ -79,8 +83,8 @@ def main(epochs):
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model_log_reg.parameters(), lr=0.001)
     train_model(epochs, model_log_reg, optimizer, criterion, dataset)
-    score = evaluate_model(model_log_reg, dataset)
-    save_model(model_log_reg, 'log_reg', score)
+    score, time = evaluate_model(model_log_reg, dataset)
+    save_model(model_log_reg, 'log_reg', score, time)
 
 
 if __name__ == "__main__":

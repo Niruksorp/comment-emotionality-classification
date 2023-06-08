@@ -77,6 +77,8 @@ def eval(model, text):
     print(prof.key_averages().table(sort_by="self_cpu_memory_usage", row_limit=10))
     print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 
+    prof.key_averages().table(sort_by="self_cpu_memory_usage", row_limit=10).split('\n')[-2].split(' ')[-1][:-2]
+
     return get_emotional_grade(np.argmax(res.numpy()))
 
 

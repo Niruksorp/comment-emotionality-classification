@@ -1,6 +1,5 @@
-import os
-import psycopg2
 import pandas as pd
+import psycopg2
 from psycopg2 import sql
 
 
@@ -119,10 +118,10 @@ def download_dataset(table_name):
     return df
 
 
-def save_model(model, name, score):
+def save_model(model, name, score, time):
     insert_model_sql = '''
-    INSERT INTO model (model_id, model_name, weights, version, score, data_version) 
-    VALUES (%s, %s, %s, %s, %s, %s)
+    INSERT INTO model (model_id, model_name, weights, version, score, time, final_score, data_version) 
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     '''
     connection = connect_database()
     cursor = connection.cursor()
@@ -141,7 +140,9 @@ def save_model(model, name, score):
         model_id = int(model_id[0]) + 1
 
     data_version = 1
-    cursor.execute(insert_model_sql, (model_id, name, psycopg2.Binary(model), model_version, score, data_version))
+    final = score * 10 - float(time) / 10
+    cursor.execute(insert_model_sql,
+                   (model_id, name, psycopg2.Binary(model), model_version, score, time, final, data_version))
     connection.commit()
     connection.close()
 
@@ -171,8 +172,9 @@ def load_latest_model_by_name(name):
 def best_model_deploy():
     connection = connect_database()
     cursor = connection.cursor()
-    cursor.execute(sql.SQL("SELECT model_id, model_name FROM {table} WHERE score = ( SELECT MAX(score) FROM {table} )")
-                   .format(table=sql.Identifier("model")))
+    cursor.execute(
+        sql.SQL("SELECT model_id, model_name FROM {table} WHERE final_score = ( SELECT MAX(final_score) FROM {table} )")
+        .format(table=sql.Identifier("model")))
     result = cursor.fetchall()
 
     cursor.execute(sql.SQL("SELECT MAX(id) from deploy"))
