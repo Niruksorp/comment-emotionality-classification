@@ -6,7 +6,7 @@ from model import perceptron
 from data_preprocessing import get_embs
 from model.logistic_regression import create_model
 from model import perceptron
-from src import train
+import train
 from util.database import load_latest_model_by_name
 from util.model_helper import unpack_model
 from model import logistic_regression
