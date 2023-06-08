@@ -2,6 +2,12 @@ name: Training
 on:
   workflow_dispatch:
     inputs:
+      k8s_deploy:
+        type: choice
+        description: needs to k8s_deploy?
+        options:
+          - True
+          - False
       update_last_model:
         type: choice
         description: update last model?
@@ -120,8 +126,21 @@ jobs:
           DB_PASSWORD: ${{secrets.DB_PASS}}
         run: python src/retraining_perceprton.py 10 log_reg
 
-  build:
+  model_deploy:
     if: ${{ always() }}
+    needs: [ retrain, retrain_perceptron, train, train_perceptron ]
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v3
+      - name: deploy model
+        working-directory: ./src
+        env:
+          DB_USERNAME: github
+          DB_PASSWORD: ${{secrets.DBPASSWORD}}
+        run: python update_server.py
+
+  docker_build:
+    if: github.event.inputs.k8s_deploy == 'True'
     needs: [retrain, retrain_perceptron, train, train_perceptron]
     runs-on: ubuntu-latest
     steps:
@@ -142,8 +161,8 @@ jobs:
       - name: Push into Docker Hub
         run: docker push niruksorp/ifmo-comment-emmotionaly
 
-  deploy:
-    if: ${{ always() }}
+  deploy_k8s:
+    if: github.event.inputs.k8s_deploy == 'True'
     needs: build
     runs-on: self-hosted
     steps:

@@ -183,7 +183,7 @@ def best_model_deploy():
         id = int(id[0]) + 1
 
     cursor.execute('INSERT INTO deploy (id, model_id, model_name) VALUES(%s, %s, %s)',
-                       (id, result[0][0], result[0][1]))
+                   (id, result[0][0], result[0][1]))
     cursor.close()
     connection.commit()
     connection.close()
@@ -203,3 +203,18 @@ def best_model():
     connection.close()
 
     return bytes(data), result[0][1]
+
+
+def get_modell(name):
+    connection = connect_database()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        sql.SQL('SELECT weights FROM model WHERE model_name = %s ORDER BY score DESC LIMIT 1'), (name,))
+
+    data = cursor.fetchone()[0]
+    cursor.close()
+    connection.commit()
+    connection.close()
+
+    return bytes(data), name

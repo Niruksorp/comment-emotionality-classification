@@ -4,7 +4,7 @@ from flask import Flask, request
 from src.data_preprocessing import get_embs
 from src.model.logistic_regression import create_model
 from src.model import perceptron
-from src.util.database import best_model
+from src.util.database import best_model, get_modell
 from src.util.model_helper import unpack_model
 import torch.nn.functional as F
 import numpy as np
@@ -81,7 +81,7 @@ def eval(model, text):
 
 
 def get_model_by_name(name):
-    if name == 'perceprton':
+    if name == 'perceptron':
         return perceptron.create_model()
     elif name == 'log_reg':
         return create_model()
@@ -95,10 +95,19 @@ def home():
     return f'This comment is {eval(loaded_model, text)}'
 
 
-@app.route('/admin/loadModel/', methods=['GET'])
+@app.route('/admin/loadModel/', methods=['POST'])
 def update_model():
     global loaded_model, m_name
     res, m_name = best_model()
+    model = get_model_by_name(m_name)
+    loaded_model = unpack_model(model, res)
+
+    return "Updated to version with" + m_name
+
+@app.route('/admin/loadModel/<model_name>', methods=['POST'])
+def update_model1(model_name):
+    global loaded_model, m_name
+    res, m_name = get_modell(model_name)
     model = get_model_by_name(m_name)
     loaded_model = unpack_model(model, res)
 
