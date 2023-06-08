@@ -140,9 +140,9 @@ def save_model(model, name, score, time):
         model_id = int(model_id[0]) + 1
 
     data_version = 1
-    final = score * 10 - float(time) / 10
+    final = score * 10 - float(time) / 10000
     cursor.execute(insert_model_sql,
-                   (model_id, name, psycopg2.Binary(model), model_version, score, time, final, data_version))
+                   (model_id, name, psycopg2.Binary(model), model_version, score, time + 'us', final, data_version))
     connection.commit()
     connection.close()
 
