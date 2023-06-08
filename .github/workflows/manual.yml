@@ -68,7 +68,7 @@ jobs:
       - name: vectorize dataset
         env:
           DB_PASSWORD: ${{secrets.DB_PASS}}
-        run: python src/data_preprocessing.py 5
+        run: python src/data_preprocessing.py 1
 
   train:
     if: github.event.inputs.update_last_model == 'False'
