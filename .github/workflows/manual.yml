@@ -166,7 +166,7 @@ jobs:
         env:
           DB_USERNAME: github
           DB_PASSWORD: ${{secrets.DBPASSWORD}}
-        run: python update_server.py
+        run: python3 update_server.py
 
   docker_build:
     if: github.event.inputs.k8s_deploy == 'True'
